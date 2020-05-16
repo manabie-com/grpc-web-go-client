@@ -23,6 +23,7 @@ type UnaryTransport interface {
 }
 
 type httpTransport struct {
+	scheme string
 	host   string
 	client *http.Client
 	opts   *ConnectOptions
@@ -44,11 +45,9 @@ func (t *httpTransport) Send(ctx context.Context, endpoint, contentType string, 
 		t.sent = true
 	}()
 
-	// TODO: HTTPS support.
-	scheme := "http"
-	u := url.URL{Scheme: scheme, Host: t.host, Path: endpoint}
+	u := url.URL{Scheme: t.scheme, Host: t.host, Path: endpoint}
 	url := u.String()
-	req, err := http.NewRequest(http.MethodPost, url, body)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, body)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to build the API request")
 	}
@@ -62,6 +61,10 @@ func (t *httpTransport) Send(ctx context.Context, endpoint, contentType string, 
 		return nil, nil, errors.Wrap(err, "failed to send the API")
 	}
 
+	if res.StatusCode != http.StatusOK {
+		return nil, nil, errors.Errorf("request failed: %s", res.Status)
+	}
+
 	return res.Header, res.Body, nil
 }
 
@@ -71,7 +74,12 @@ func (t *httpTransport) Close() error {
 }
 
 var NewUnary = func(host string, opts *ConnectOptions) UnaryTransport {
+	scheme := "https"
+	if opts != nil && opts.Insecure {
+		scheme = "http"
+	}
 	return &httpTransport{
+		scheme: scheme,
 		host:   host,
 		client: http.DefaultClient,
 		opts:   opts,

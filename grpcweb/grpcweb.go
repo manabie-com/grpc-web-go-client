@@ -7,12 +7,13 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/ktr0731/grpc-web-go-client/grpcweb/parser"
-	"github.com/ktr0731/grpc-web-go-client/grpcweb/transport"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/encoding"
 	"google.golang.org/grpc/metadata"
+
+	"github.com/ktr0731/grpc-web-go-client/grpcweb/parser"
+	"github.com/ktr0731/grpc-web-go-client/grpcweb/transport"
 )
 
 type ClientConn struct {
@@ -35,7 +36,7 @@ func (c *ClientConn) Invoke(ctx context.Context, method string, args, reply inte
 	callOptions := c.applyCallOptions(opts)
 	codec := callOptions.codec
 
-	tr := transport.NewUnary(c.host, nil)
+	tr := transport.NewUnary(c.host, &transport.ConnectOptions{Insecure: c.dialOptions.insecure})
 	defer tr.Close()
 
 	r, err := encodeRequestBody(codec, args)
@@ -59,13 +60,14 @@ func (c *ClientConn) Invoke(ctx context.Context, method string, args, reply inte
 	}
 	defer rawBody.Close()
 
+	respMd := toMetadata(header)
 	if callOptions.header != nil {
-		*callOptions.header = toMetadata(header)
+		*callOptions.header = respMd
 	}
 
 	resHeader, err := parser.ParseResponseHeader(rawBody)
 	if err != nil {
-		return errors.Wrap(err, "failed to parse response header")
+		return statusFromHeader(respMd).Err()
 	}
 
 	if resHeader.IsMessageHeader() {
@@ -118,7 +120,7 @@ func (c *ClientConn) NewServerStream(desc *grpc.StreamDesc, method string, opts 
 	}
 	return &serverStream{
 		endpoint:    method,
-		transport:   transport.NewUnary(c.host, nil),
+		transport:   transport.NewUnary(c.host, &transport.ConnectOptions{Insecure: c.dialOptions.insecure}),
 		callOptions: c.applyCallOptions(opts),
 	}, nil
 }

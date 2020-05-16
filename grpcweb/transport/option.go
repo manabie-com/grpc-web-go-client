@@ -1,3 +1,5 @@
 package transport
 
-type ConnectOptions struct{}
+type ConnectOptions struct{
+	Insecure bool
+}
