@@ -97,12 +97,6 @@ func TestParseLengthPrefixedMessage(t *testing.T) {
 			wantErr:     true,
 			expectedErr: io.ErrUnexpectedEOF,
 		},
-		"EOF": {
-			bytes:       []byte{},
-			length:      0,
-			wantErr:     true,
-			expectedErr: io.EOF,
-		},
 	}
 
 	for name, c := range cases {

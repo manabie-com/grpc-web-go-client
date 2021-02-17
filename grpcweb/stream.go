@@ -257,12 +257,9 @@ func (s *serverStream) Receive(ctx context.Context, res interface{}) (err error)
 	}()
 
 	var h [5]byte
-	n, err := s.resStream.Read(h[:])
+	_, err = io.ReadFull(s.resStream, h[:])
 	if err != nil {
 		return err
-	}
-	if n != len(h) {
-		return io.ErrUnexpectedEOF
 	}
 
 	flag := h[0]
