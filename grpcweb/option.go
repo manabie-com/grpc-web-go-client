@@ -31,6 +31,12 @@ func WithDefaultCallOptions(opts ...CallOption) DialOption {
 	}
 }
 
+func WithCustomHttpClient(cl *http.Client) DialOption {
+	return func(opt *dialOptions) {
+		opt.client = cl
+	}
+}
+
 func WithInsecure() DialOption {
 	return func(opt *dialOptions) {
 		opt.insecure = true
