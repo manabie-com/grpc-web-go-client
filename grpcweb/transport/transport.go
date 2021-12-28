@@ -78,13 +78,18 @@ var NewUnary = func(host string, opts *ConnectOptions) UnaryTransport {
 	if opts != nil && opts.Insecure {
 		scheme = "http"
 	}
-	return &httpTransport{
+	client := http.DefaultClient
+	if opts.CustomClient != nil {
+		client = opts.CustomClient
+	}
+	tr := &httpTransport{
 		scheme: scheme,
 		host:   host,
-		client: http.DefaultClient,
+		client: client,
 		opts:   opts,
 		header: make(http.Header),
 	}
+	return tr
 }
 
 type ClientStreamTransport interface {

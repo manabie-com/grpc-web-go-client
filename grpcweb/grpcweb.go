@@ -36,7 +36,7 @@ func (c *ClientConn) Invoke(ctx context.Context, method string, args, reply inte
 	callOptions := c.applyCallOptions(opts)
 	codec := callOptions.codec
 
-	tr := transport.NewUnary(c.host, &transport.ConnectOptions{Insecure: c.dialOptions.insecure})
+	tr := transport.NewUnary(c.host, &transport.ConnectOptions{Insecure: c.dialOptions.insecure, CustomClient: c.dialOptions.client})
 	defer tr.Close()
 
 	r, err := encodeRequestBody(codec, args)
@@ -120,7 +120,7 @@ func (c *ClientConn) NewServerStream(desc *grpc.StreamDesc, method string, opts 
 	}
 	return &serverStream{
 		endpoint:    method,
-		transport:   transport.NewUnary(c.host, &transport.ConnectOptions{Insecure: c.dialOptions.insecure}),
+		transport:   transport.NewUnary(c.host, &transport.ConnectOptions{Insecure: c.dialOptions.insecure, CustomClient: c.dialOptions.client}),
 		callOptions: c.applyCallOptions(opts),
 	}, nil
 }

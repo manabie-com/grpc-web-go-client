@@ -1,6 +1,8 @@
 package grpcweb
 
 import (
+	"net/http"
+
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/encoding"
 	"google.golang.org/grpc/encoding/proto"
@@ -17,6 +19,7 @@ var (
 type dialOptions struct {
 	defaultCallOptions   []CallOption
 	insecure             bool
+	client               *http.Client
 	transportCredentials credentials.TransportCredentials
 }
 

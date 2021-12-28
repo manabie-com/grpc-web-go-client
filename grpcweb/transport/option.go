@@ -1,5 +1,8 @@
 package transport
 
-type ConnectOptions struct{
-	Insecure bool
+import "net/http"
+
+type ConnectOptions struct {
+	Insecure     bool
+	CustomClient *http.Client
 }
